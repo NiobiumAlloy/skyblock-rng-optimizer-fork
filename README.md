@@ -1,6 +1,6 @@
 # SkyBlock RNG Meter Optimizer
 
-A mathematically rigorous drop-rate calculator and RNG Meter strategy optimizer for Hypixel SkyBlock Slayers. Finds the exact **sweet spot (L\*)** — the number of runs to keep the meter ON before switching it off — to maximize drops per run over a full pity cycle.
+A mathematically rigorous drop-rate calculator and RNG Meter strategy optimizer for Hypixel SkyBlock Slayers. Finds the exact **sweet spot (L\*)**, the number of runs to keep the meter ON before switching it off to maximize drops per run over a full pity cycle.
 
 > **Zero dependencies. Single HTML file. Open in any browser.**
 
@@ -8,10 +8,10 @@ A mathematically rigorous drop-rate calculator and RNG Meter strategy optimizer 
 
 ## Features
 
-- **Sweet spot solver** via O(m) Dynamic Programming — finds the exact L\* that maximizes `Eff(L) = expected drops / expected runs`
+- **Sweet spot solver** via O(m) Dynamic Programmingm, finds the exact L\* that maximizes `Eff(L) = expected drops / expected runs`
 - **All 6 slayer types** covered: Zombie, Spider, Wolf, Enderman, Blaze, Vampire
 - **9 bosses** with full loot tables (TOKEN, MAIN, EXTRA pools)
-- **Magic Find** simulation — applies MF boost only to items with base chance < 5%, exactly as the game does
+- **Magic Find** simulation applies MF boost only to items with base chance < 5%, exactly as the game does
 - **Aatrox XP buff** toggle (+25% XP per run)
 - **Pity attribute** support (levels 0–10, each +1% XP per run)
 - **Efficiency curve** chart showing Eff(L) across all possible L values
@@ -22,7 +22,7 @@ A mathematically rigorous drop-rate calculator and RNG Meter strategy optimizer 
 
 ## Live tests and proof with visual PoC
 
-Open `calculator.html` for tests or `visual-proof-of-concept.html` directly in your browser — no server, no install, no build step needed.
+Open `calculator.html` for tests or `visual-proof-of-concept.html` directly in your browser, no server, no install, no build step needed.
 
 ```
 # Clone the repo
@@ -45,7 +45,7 @@ start visual-proof-of-concept.html         # Windows
 
 ### The core problem
 
-The RNG Meter boosts the **weight** of a selected item linearly up to 3× as it fills. Keeping the meter ON increases your per-run drop chance, but if the item drops while the meter is active, **the meter resets to zero** — you lose all accumulated XP. The question is: at what point does the reset risk outweigh the boost benefit?
+The RNG Meter boosts the **weight** of a selected item linearly up to 3× as it fills. Keeping the meter ON increases your per-run drop chance, but if the item drops while the meter is active, **the meter resets to zero** you lose all accumulated XP. The question is: at what point does the reset risk outweigh the boost benefit?
 
 ### The model
 
@@ -74,13 +74,13 @@ Eff(L) = [1 + S(L) × (m − L) × p] / [sumS(L) + S(L) × (m − L + 1)]
 
 where `p` is the base chance with Magic Find (meter OFF), and `sumS(L) = Σ S(i)` for `i = 0..L-1`.
 
-**Sweet spot:** `L* = argmax Eff(L)` — found by a single linear scan in O(m).
+**Sweet spot:** `L* = argmax Eff(L)` found by a single linear scan in O(m).
 
 For the full mathematical derivation, see [`MATH.md`](MATH.md).
 
 ### Magic Find
 
-MF applies a weight multiplier of `(1 + MF/100)` — but only for items whose base drop chance is **below 5%** after RNG Meter modifications, exactly as specified by the wiki. Higher MF shifts L\* later because it raises the value of each meter-OFF run, reducing the relative cost of a reset.
+MF applies a weight multiplier of `(1 + MF/100)` but only for items whose base drop chance is **below 5%** after RNG Meter modifications, exactly as specified by the wiki. Higher MF shifts L\* later because it raises the value of each meter-OFF run, reducing the relative cost of a reset.
 
 ### XP per run
 
@@ -113,7 +113,7 @@ Drop weights sourced from the [Hypixel SkyBlock Wiki](https://wiki.hypixel.net/S
 
 ```
 skyblock-rng-optimizer/
-├── calculadora.html      # The full application — single file, zero deps
+├── calculadora.html      # The full application - single file, zero deps
 ├── README.md             # This file
 ├── MATH.md               # Full mathematical derivation and algorithm analysis
 ├── CONTRIBUTING.md       # How to add bosses, fix weights, open PRs
@@ -130,7 +130,7 @@ skyblock-rng-optimizer/
 
 Found a wrong drop weight? Want to add a missing boss tier? See [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
-The fastest contribution is a weight correction — just open an issue with the item name, current weight in the file, correct weight from the wiki, and a link to the source.
+The fastest contribution is a weight correction just open an issue with the item name, current weight in the file, correct weight from the wiki, and a link to the source.
 
 ---
 
@@ -145,6 +145,6 @@ The fastest contribution is a weight correction — just open an issue with the 
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+MIT see [`LICENSE`](LICENSE).
 
 Not affiliated with Hypixel or Mojang. All game data belongs to their respective owners.
