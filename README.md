@@ -8,7 +8,7 @@ A mathematically rigorous drop-rate calculator and RNG Meter strategy optimizer 
 
 ## Features
 
-- **Sweet spot solver** via O(m) Dynamic Programmingm, finds the exact L\* that maximizes `Eff(L) = expected drops / expected runs`
+- **Sweet spot solver** via O(m) Dynamic Programming, finds the exact L\* that maximizes `Eff(L) = expected drops / expected runs`
 - **All 6 slayer types** covered: Zombie, Spider, Wolf, Enderman, Blaze, Vampire
 - **9 bosses** with full loot tables (TOKEN, MAIN, EXTRA pools)
 - **Magic Find** simulation applies MF boost only to items with base chance < 5%, exactly as the game does
