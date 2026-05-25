@@ -113,7 +113,7 @@ Drop weights sourced from the [Hypixel SkyBlock Wiki](https://wiki.hypixel.net/S
 
 ```
 skyblock-rng-optimizer/
-├── calculadora.html      # The full application - single file, zero deps
+├── index.html      # The full application - single file, zero deps
 ├── README.md             # This file
 ├── MATH.md               # Full mathematical derivation and algorithm analysis
 ├── CONTRIBUTING.md       # How to add bosses, fix weights, open PRs
