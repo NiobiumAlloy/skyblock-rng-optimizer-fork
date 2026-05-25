@@ -22,7 +22,7 @@ A mathematically rigorous drop-rate calculator and RNG Meter strategy optimizer 
 
 ## Live tests and proof with visual PoC
 
-Open `calculator.html` for tests or `visual-proof-of-concept.html` directly in your browser, no server, no install, no build step needed.
+Open `index.html` for tests or `visual-proof-of-concept.html` directly in your browser, no server, no install, no build step needed.
 
 ```
 # Clone the repo
