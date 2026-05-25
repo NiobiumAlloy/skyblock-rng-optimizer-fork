@@ -75,16 +75,22 @@ select, input[type=number], input[type=text] { width: 100%; font-size: 14px; }
       <div class="field-group">
         <span class="field-label">Magic Find</span>
         <div class="slider-row">
-          <input type="range" id="sl-mf" min="0" max="500" value="100" step="1">
-          <span class="slider-val" id="val-mf">100</span>
+        <input type="range" id="sl-mf" min="0" max="500" value="100" step="1">
+        <input type="number" id="val-mf" class="slider-val" min="0" max="500" value="100"
+         style="width:54px; text-align:right; border:none; background:transparent;
+                font-size:14px; font-weight:500; color:var(--color-text-primary);
+                -moz-appearance:textfield;">
         </div>
       </div>
       <div class="field-group">
         <span class="field-label">Pity Attribute Level (0–10)</span>
         <div class="slider-row">
-          <input type="range" id="sl-pity" min="0" max="10" value="0" step="1">
-          <span class="slider-val" id="val-pity">0</span>
-        </div>
+        <input type="range" id="sl-pity" min="0" max="10" value="0" step="1">
+        <input type="number" id="val-pity" class="slider-val" min="0" max="10" value="0"
+         style="width:40px; text-align:right; border:none; background:transparent;
+                font-size:14px; font-weight:500; color:var(--color-text-primary);
+                -moz-appearance:textfield;">
+      </div>
       </div>
     </div>
     <div class="field-group">
@@ -644,12 +650,27 @@ function renderChart(res) {
   });
 }
 
+// Magic Find
 document.getElementById('sl-mf').addEventListener('input', function() {
-  document.getElementById('val-mf').textContent = this.value;
+  document.getElementById('val-mf').value = this.value;
   if (selectedDrop !== null) compute();
 });
+document.getElementById('val-mf').addEventListener('input', function() {
+  let v = Math.min(500, Math.max(0, parseInt(this.value) || 0));
+  this.value = v;
+  document.getElementById('sl-mf').value = v;
+  if (selectedDrop !== null) compute();
+});
+
+// Pity Attribute Level
 document.getElementById('sl-pity').addEventListener('input', function() {
-  document.getElementById('val-pity').textContent = this.value;
+  document.getElementById('val-pity').value = this.value;
+  if (selectedDrop !== null) compute();
+});
+document.getElementById('val-pity').addEventListener('input', function() {
+  let v = Math.min(10, Math.max(0, parseInt(this.value) || 0));
+  this.value = v;
+  document.getElementById('sl-pity').value = v;
   if (selectedDrop !== null) compute();
 });
 
