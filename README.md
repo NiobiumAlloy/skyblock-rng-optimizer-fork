@@ -30,9 +30,9 @@ git clone https://github.com/your-username/skyblock-rng-optimizer.git
 cd skyblock-rng-optimizer
 
 # Open in browser (any OS)
-open calculator.html          # macOS
-xdg-open calculator.html      # Linux
-start calculator.html         # Windows
+open index.html          # macOS
+xdg-open index.html      # Linux
+start index.html         # Windows
 # Open in browser (any OS)
 open visual-proof-of-concept.html          # macOS
 xdg-open visual-proof-of-concept.html      # Linux
