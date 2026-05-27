@@ -1,651 +1,1076 @@
-<h2 class="sr-only">RNG Meter calculator and optimizer for Hypixel SkyBlock Slayers</h2>
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font-sans); }
-.wrap { padding: 1rem 0; max-width: 680px; }
-.section { margin-bottom: 1.5rem; }
-.section-title { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: 0.75rem; }
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; }
-.metric-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 1rem; }
-.metric-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
-.metric-value { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
-.metric-sub { font-size: 12px; color: var(--color-text-tertiary); margin-top: 2px; }
-.highlight-card { background: var(--color-background-success); border: 0.5px solid var(--color-border-success); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; }
-.highlight-card .metric-value { color: var(--color-text-success); }
-.warn-card { background: var(--color-background-warning); border: 0.5px solid var(--color-border-warning); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; }
-.warn-card .metric-value { color: var(--color-text-warning); }
-.field-group { display: flex; flex-direction: column; gap: 6px; }
-.field-label { font-size: 13px; color: var(--color-text-secondary); }
-select, input[type=number], input[type=text] { width: 100%; font-size: 14px; }
-.slider-row { display: flex; align-items: center; gap: 10px; }
-.slider-row input[type=range] { flex: 1; }
-.slider-val { font-size: 14px; font-weight: 500; min-width: 38px; text-align: right; color: var(--color-text-primary); }
-.drop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.drop-btn { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 12px; cursor: pointer; text-align: left; transition: border-color 0.15s; }
-.drop-btn:hover { border-color: var(--color-border-secondary); }
-.drop-btn.active { border: 1.5px solid #1D9E75; background: var(--color-background-success); }
-.drop-btn .drop-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
-.drop-btn .drop-chance { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
-.drop-btn .drop-pool { font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 2px; }
-.pool-main { color: #185FA5; }
-.pool-extra { color: #BA7517; }
-.pool-token { color: #993556; }
-.divider { height: 0.5px; background: var(--color-border-tertiary); margin: 1rem 0; }
-.badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: var(--border-radius-md); }
-.badge-green { background: #E1F5EE; color: #0F6E56; }
-.badge-blue { background: #E6F1FB; color: #185FA5; }
-.badge-amber { background: #FAEEDA; color: #854F0B; }
-.badge-red { background: #FCEBEB; color: #A32D2D; }
-.chart-wrap { position: relative; width: 100%; height: 220px; margin-top: 1rem; }
-.advice-box { border-left: 3px solid #1D9E75; padding: 0.75rem 1rem; background: var(--color-background-secondary); border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; }
-.advice-box p { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; }
-.advice-box strong { color: var(--color-text-primary); font-weight: 500; }
-.tab-row { display: flex; gap: 4px; margin-bottom: 1rem; }
-.tab { font-size: 13px; padding: 6px 14px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); cursor: pointer; color: var(--color-text-secondary); background: transparent; }
-.tab.active { background: var(--color-background-primary); border-color: var(--color-border-primary); color: var(--color-text-primary); font-weight: 500; }
-.progress-bar-wrap { height: 8px; background: var(--color-background-secondary); border-radius: 4px; overflow: hidden; margin-top: 6px; }
-.progress-bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
-</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyBlock Slayer RNG Meter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <style>
+        :root {
+            --bg: #0a0b0e;
+            --bg2: #10121a;
+            --bg3: #181b26;
+            --bg4: #1f2333;
+            --border: #2a2e3f;
+            --border2: #363b52;
+            --text: #e8eaf0;
+            --text2: #9aa0b8;
+            --text3: #5c6280;
+            --accent: #7c6af7;
+            --accent2: #5c4fe0;
+            --accent-glow: rgba(124,106,247,0.18);
+            --green: #3dba7e;
+            --green-bg: rgba(61,186,126,0.12);
+            --green-border: rgba(61,186,126,0.3);
+            --amber: #e8a93d;
+            --amber-bg: rgba(232,169,61,0.12);
+            --amber-border: rgba(232,169,61,0.3);
+            --red: #e8564d;
+            --red-bg: rgba(232,86,77,0.12);
+            --blue: #4d8fe8;
+            --purple: #b06af7;
+            --gold: #f0c060;
+            --gold-bg: rgba(240,192,96,0.12);
+            --gold-border: rgba(240,192,96,0.3);
+            --mono: 'Space Mono', monospace;
+            --sans: 'Inter', sans-serif;
+        }
 
-<div class="wrap">
-  <div class="section">
-    <div class="section-title">Boss & Target</div>
-    <div class="grid2" style="margin-bottom:12px">
-      <div class="field-group">
-        <span class="field-label">Slayer Type</span>
-        <select id="sel-activity"></select>
-      </div>
-      <div class="field-group">
-        <span class="field-label">Boss / Tier</span>
-        <select id="sel-boss"></select>
-      </div>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* Reset browser button styles */
+        button {
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: inherit;
+            color: inherit;
+        }
+
+        body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+
+        /* ── TABS ── */
+        .nav { display: flex; align-items: center; gap: 0; border-bottom: 1px solid var(--border); background: var(--bg); padding: 0 24px; }
+        .nav-logo { font-family: var(--mono); font-size: 13px; color: var(--accent); letter-spacing: 0.05em; padding: 16px 20px 16px 0; border-right: 1px solid var(--border); margin-right: 4px; white-space: nowrap; }
+        .nav-tab { font-size: 13px; color: var(--text3); padding: 16px 18px; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; white-space: nowrap; }
+        .nav-tab:hover { color: var(--text2); }
+        .nav-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+        .nav-ext { font-size: 12px; color: var(--text3); display: flex; align-items: center; gap: 6px; text-decoration: none; padding: 8px 14px; border: 1px solid var(--border); border-radius: 6px; transition: all 0.15s; }
+        .nav-ext:hover { color: var(--text2); border-color: var(--border2); background: var(--bg3); }
+        .nav-ext svg { width: 13px; height: 13px; opacity: 0.7; }
+
+        /* ── PAGES ── */
+        .page { display: none; padding: 28px 24px; max-width: 900px; margin: 0 auto; }
+        .page.active { display: block; }
+
+        /* ── SECTIONS ── */
+        .section { margin-bottom: 28px; }
+        .section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); margin-bottom: 12px; }
+
+        /* ── GRID ── */
+        .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .g4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+        /* ── CARDS ── */
+        .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+        .card-green { background: var(--green-bg); border-color: var(--green-border); }
+        .card-amber { background: var(--amber-bg); border-color: var(--amber-border); }
+        .card-gold { background: var(--gold-bg); border-color: var(--gold-border); }
+        .card-accent { background: var(--accent-glow); border-color: rgba(124,106,247,0.3); }
+        .metric-label { font-size: 11px; color: var(--text3); margin-bottom: 6px; }
+        .metric-val { font-size: 22px; font-weight: 600; color: var(--text); font-family: var(--mono); }
+        .metric-val.green { color: var(--green); }
+        .metric-val.amber { color: var(--amber); }
+        .metric-val.accent { color: var(--accent); }
+        .metric-val.gold { color: var(--gold); }
+        .metric-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+        /* ── FORM ── */
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field-label { font-size: 12px; color: var(--text2); }
+        select, input[type=number] {
+            width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+            color: var(--text); padding: 9px 12px; font-size: 14px; font-family: var(--sans);
+            outline: none; transition: border-color 0.15s;
+        }
+        select:focus, input:focus { border-color: var(--accent); }
+        select option { background: var(--bg3); }
+
+        /* ── DROP GRID ── */
+        .drop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .drop-btn {
+            background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+            padding: 10px 14px; cursor: pointer; text-align: left; transition: all 0.15s;
+        }
+        .drop-btn:hover { border-color: var(--border2); background: var(--bg4); }
+        .drop-btn.active { border-color: var(--accent); background: var(--accent-glow); }
+        .drop-btn.dye-btn.active { border-color: var(--gold); background: var(--gold-bg); }
+        .drop-name { font-size: 13px; font-weight: 500; color: var(--text); }
+        .drop-chance { font-size: 11px; color: var(--text2); margin-top: 2px; font-family: var(--mono); }
+        .drop-chance.boosted { color: var(--green); font-weight: 600; }
+        .drop-pool { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 3px; font-weight: 600; }
+        .pool-main { color: var(--blue); }
+        .pool-extra { color: var(--amber); }
+        .pool-token { color: var(--purple); }
+        .pool-dye { color: var(--gold); }
+
+        /* ── TOGGLE ── */
+        .toggle-row { display: flex; gap: 8px; }
+        .toggle-btn {
+            flex: 1; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+            padding: 9px 12px; cursor: pointer; font-size: 13px; color: var(--text2);
+            transition: all 0.15s; text-align: center; font-family: var(--sans);
+        }
+        .toggle-btn.active { background: var(--accent-glow); border-color: var(--accent); color: var(--text); font-weight: 500; }
+
+        /* ── DIVIDER ── */
+        .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+        /* ── INNER TABS ── */
+        .tab-row { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .tab {
+            font-size: 12px; padding: 10px 16px; cursor: pointer; color: var(--text3);
+            border-bottom: 2px solid transparent; transition: all 0.15s; background: transparent;
+            border-top: none; border-left: none; border-right: none; font-family: var(--sans);
+        }
+        .tab:hover { color: var(--text2); }
+        .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+        /* ── ADVICE ── */
+        .advice { border-left: 3px solid var(--accent); padding: 12px 16px; background: var(--accent-glow); border-radius: 0 8px 8px 0; }
+        .advice.warn { border-left-color: var(--amber); background: var(--amber-bg); }
+        .advice p { font-size: 13px; color: var(--text2); line-height: 1.65; }
+        .advice strong { color: var(--text); font-weight: 600; }
+
+        /* ── PROGRESS ── */
+        .prog-wrap { height: 6px; background: var(--bg4); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+        .prog-bar { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s; }
+        .prog-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text3); margin-top: 5px; }
+
+        /* ── CHART ── */
+        .chart-wrap { position: relative; width: 100%; height: 240px; margin-top: 8px; }
+
+        /* ── EMPTY STATE ── */
+        .empty { padding: 24px; text-align: center; color: var(--text3); font-size: 13px; }
+
+        /* ── BADGE ── */
+        .badge { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.04em; }
+        .badge-green { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+        .badge-amber { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+        .badge-gold { background: var(--gold-bg); color: var(--gold); border: 1px solid var(--gold-border); }
+
+        /* ── SPREADSHEET PAGE ── */
+        .sheet-frame-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--bg2); }
+        .sheet-toolbar { padding: 10px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); background: var(--bg3); }
+        .sheet-url { font-size: 12px; color: var(--text3); font-family: var(--mono); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .sheet-open-btn { font-size: 12px; color: var(--accent); text-decoration: none; padding: 5px 12px; border: 1px solid rgba(124,106,247,0.3); border-radius: 6px; white-space: nowrap; transition: all 0.15s; }
+        .sheet-open-btn:hover { background: var(--accent-glow); }
+        .sheet-iframe { width: 100%; height: 680px; border: none; }
+
+        @media (max-width: 600px) {
+            .g4 { grid-template-columns: 1fr 1fr; }
+            .g3 { grid-template-columns: 1fr 1fr; }
+            .page { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <div class="nav-logo">🗡SLAYER RNG METER OPTIMIZER</div>
+    <button class="nav-tab active" onclick="showPage('calc')">Calculator</button>
+    <button class="nav-tab" onclick="showPage('sheet')">Profit Spreadsheet</button>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 12px; color: var(--text3); margin-right: 4px;">Made by: <strong style="color: var(--text);">Buzuca1337</strong></span>
+        <a class="nav-ext" href="https://github.com/kyotinho" target="_blank">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+            GitHub
+        </a>
+        <a class="nav-ext" href="https://sky.shiiyu.moe/stats/Buzuca1337/Lemon" target="_blank">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            SkyBlock
+        </a>
     </div>
-    <div class="section-title" style="margin-bottom:0.5rem">Select target drop</div>
-    <div class="drop-grid" id="drop-grid"></div>
-  </div>
+</nav>
 
-  <div class="divider"></div>
+<!-- ══ CALCULATOR PAGE ══ -->
+<div class="page active" id="page-calc">
 
-  <div class="section">
-    <div class="section-title">Your Stats</div>
-    <div class="grid2" style="margin-bottom:12px">
-      <div class="field-group">
-        <span class="field-label">Magic Find</span>
-        <input type="number" id="val-mf" min="0" value="100">
-      </div>
-      <div class="field-group">
-        <span class="field-label">Pity Attribute Level (0–10)</span>
-        <input type="number" id="val-pity" min="0" value="0">
-      </div>
-    </div>
-    <div class="field-group">
-      <span class="field-label">Aatrox XP Buff active?</span>
-      <div style="display:flex; gap:8px; margin-top:4px">
-        <button class="drop-btn" id="btn-aatrox-no" style="flex:1" onclick="setAatrox(false)">
-          <span class="drop-name">No</span>
-        </button>
-        <button class="drop-btn active" id="btn-aatrox-yes" style="flex:1" onclick="setAatrox(true)">
-          <span class="drop-name">Yes (+25% XP)</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="divider"></div>
-
-  <div id="results-section" style="display:none">
     <div class="section">
-      <div class="section-title">RNG Meter Info</div>
-      <div class="grid4" style="margin-bottom:12px">
-        <div class="metric-card">
-          <div class="metric-label">Required XP</div>
-          <div class="metric-value" id="r-req-xp">—</div>
-          <div class="metric-sub">for guaranteed pity</div>
+        <div class="section-label">Boss & Target Drop</div>
+        <div class="g2" style="margin-bottom:12px">
+            <div class="field">
+                <span class="field-label">Slayer Type</span>
+                <select id="sel-activity"></select>
+            </div>
+            <div class="field">
+                <span class="field-label">Boss / Tier</span>
+                <select id="sel-boss"></select>
+            </div>
         </div>
-        <div class="metric-card">
-          <div class="metric-label">Runs to pity</div>
-          <div class="metric-value" id="r-m">—</div>
-          <div class="metric-sub" id="r-xp-run">XP/run</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Base chance</div>
-          <div class="metric-value" id="r-base-chance">—</div>
-          <div class="metric-sub" id="r-base-1in">—</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Chance with MF</div>
-          <div class="metric-value" id="r-mf-chance">—</div>
-          <div class="metric-sub" id="r-mf-1in">—</div>
-        </div>
-      </div>
+        <div class="drop-grid" id="drop-grid"></div>
     </div>
+
+    <div class="divider"></div>
 
     <div class="section">
-      <div class="tab-row">
-        <button class="tab active" onclick="setTab('optimal')">Sweet Spot</button>
-        <button class="tab" onclick="setTab('curve')">Efficiency Curve</button>
-        <button class="tab" onclick="setTab('strategy')">Strategic Analysis</button>
-      </div>
-
-      <div id="tab-optimal">
-        <div class="grid3" style="margin-bottom:12px">
-          <div class="highlight-card">
-            <div class="metric-label">Sweet spot (L*)</div>
-            <div class="metric-value" id="r-best-l">—</div>
-            <div class="metric-sub">turn meter OFF here</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Meter % at L*</div>
-            <div class="metric-value" id="r-best-pct">—</div>
-            <div class="metric-sub">accumulated progress</div>
-          </div>
-          <div class="highlight-card">
-            <div class="metric-label">Gain vs meter off</div>
-            <div class="metric-value" id="r-gain">—</div>
-            <div class="metric-sub">efficiency increase</div>
-          </div>
+        <div class="section-label">Your Stats</div>
+        <div class="g3" style="margin-bottom:12px">
+            <div class="field">
+                <span class="field-label">Magic Find</span>
+                <input type="number" id="val-mf" min="0" value="100">
+            </div>
+            <div class="field">
+                <span class="field-label">Meter Progress (%)</span>
+                <input type="number" id="val-meter" min="0" max="100" value="0" placeholder="0–100">
+            </div>
+            <div class="field">
+                <span class="field-label">Daemon Shard (Pity Attribute) Level (0 - 10)</span>
+                <input type="number" id="val-pity" min="0" max="10" value="0">
+            </div>
         </div>
-        <div class="grid2" style="margin-bottom:12px">
-          <div class="metric-card">
-            <div class="metric-label">Optimal rate (with meter)</div>
-            <div class="metric-value" id="r-opt-rate">—</div>
-            <div class="metric-sub">expected drops per run</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Baseline rate (no meter)</div>
-            <div class="metric-value" id="r-base-rate">—</div>
-            <div class="metric-sub">expected drops per run</div>
-          </div>
+        <div class="field" style="margin-bottom:0">
+            <span class="field-label">Aatrox XP Buff (+25% XP)</span>
+            <div class="toggle-row" style="margin-top:4px">
+                <button class="toggle-btn" id="btn-aatrox-no" onclick="setAatrox(false)">No</button>
+                <button class="toggle-btn active" id="btn-aatrox-yes" onclick="setAatrox(true)">Yes (+25% XP)</button>
+            </div>
         </div>
-
-        <div class="advice-box" id="advice-box">
-          <p id="advice-text">—</p>
-        </div>
-
-        <div style="margin-top:1rem">
-          <div style="font-size:12px; color:var(--color-text-secondary); margin-bottom:6px">Meter progress at sweet spot</div>
-          <div class="progress-bar-wrap">
-            <div class="progress-bar" id="progress-bar" style="background:#1D9E75; width:0%"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--color-text-tertiary);margin-top:4px">
-            <span>0%</span><span id="prog-label">—</span><span>100% (pity)</span>
-          </div>
-        </div>
-      </div>
-
-      <div id="tab-curve" style="display:none">
-        <div class="chart-wrap">
-          <canvas id="eff-chart" role="img" aria-label="Efficiency curve of drops per meter-off percentage">RNG Meter efficiency curve.</canvas>
-        </div>
-        <div style="display:flex;gap:16px;margin-top:8px;font-size:12px;color:var(--color-text-secondary)">
-          <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#1D9E75"></span>With meter ON up to L</span>
-          <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#E24B4A"></span>Sweet spot</span>
-        </div>
-      </div>
-
-      <div id="tab-strategy" style="display:none">
-        <div id="strategy-content"></div>
-      </div>
     </div>
-  </div>
 
-  <div id="no-target" class="advice-box" style="margin-top:0.5rem">
-    <p>Select a target drop above to see the full analysis.</p>
-  </div>
+    <div id="results-section" style="display:none">
+        <div class="divider"></div>
+
+        <div class="section">
+            <div class="section-label">RNG Meter Info</div>
+            <div class="g4" style="margin-bottom:12px">
+                <div class="card">
+                    <div class="metric-label">Required XP</div>
+                    <div class="metric-val" id="r-req-xp">—</div>
+                    <div class="metric-sub">to fill meter</div>
+                </div>
+                <div class="card">
+                    <div class="metric-label">Runs to pity</div>
+                    <div class="metric-val" id="r-m">—</div>
+                    <div class="metric-sub" id="r-xp-run">XP/run</div>
+                </div>
+                <div class="card">
+                    <div class="metric-label">Base chance</div>
+                    <div class="metric-val" id="r-base-chance">—</div>
+                    <div class="metric-sub" id="r-base-1in">—</div>
+                </div>
+                <div class="card">
+                    <div class="metric-label">Chance with MF</div>
+                    <div class="metric-val" id="r-mf-chance">—</div>
+                    <div class="metric-sub" id="r-mf-1in">—</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="tab-row">
+                <button class="tab active" onclick="setTab('optimal')">Sweet Spot</button>
+                <button class="tab" onclick="setTab('curve')">Efficiency Curve</button>
+                <button class="tab" onclick="setTab('strategy')">Analysis</button>
+            </div>
+
+            <div id="tab-optimal">
+                <div class="g3" style="margin-bottom:12px">
+                    <div class="card card-accent">
+                        <div class="metric-label">Sweet spot (L*)</div>
+                        <div class="metric-val accent" id="r-best-l">—</div>
+                        <div class="metric-sub">turn meter OFF here</div>
+                    </div>
+                    <div class="card">
+                        <div class="metric-label">Meter % at L*</div>
+                        <div class="metric-val" id="r-best-pct">—</div>
+                        <div class="metric-sub">accumulated progress</div>
+                    </div>
+                    <div class="card card-green">
+                        <div class="metric-label">Gain vs meter off</div>
+                        <div class="metric-val green" id="r-gain">—</div>
+                        <div class="metric-sub">efficiency increase</div>
+                    </div>
+                </div>
+                <div class="g2" style="margin-bottom:12px">
+                    <div class="card">
+                        <div class="metric-label">Optimal rate (with meter)</div>
+                        <div class="metric-val" id="r-opt-rate">—</div>
+                        <div class="metric-sub">expected drops per run</div>
+                    </div>
+                    <div class="card">
+                        <div class="metric-label">Baseline rate (no meter)</div>
+                        <div class="metric-val" id="r-base-rate">—</div>
+                        <div class="metric-sub">expected drops per run</div>
+                    </div>
+                </div>
+                <div class="advice" id="advice-box">
+                    <p id="advice-text">—</p>
+                </div>
+                <div style="margin-top:16px">
+                    <div style="font-size:11px; color:var(--text3); margin-bottom:6px">Meter progress at sweet spot</div>
+                    <div class="prog-wrap"><div class="prog-bar" id="progress-bar" style="width:0%"></div></div>
+                    <div class="prog-labels"><span>0%</span><span id="prog-label">—</span><span>100% (pity)</span></div>
+                </div>
+            </div>
+
+            <div id="tab-curve" style="display:none">
+                <div class="chart-wrap">
+                    <canvas id="eff-chart"></canvas>
+                </div>
+                <div style="display:flex;gap:16px;margin-top:10px;font-size:11px;color:var(--text3)">
+                    <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--accent);display:inline-block"></span>With meter ON up to L</span>
+                    <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:var(--red);display:inline-block"></span>Sweet spot</span>
+                </div>
+            </div>
+
+            <div id="tab-strategy" style="display:none">
+                <div id="strategy-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="no-target" class="advice">
+        <p>Select a target drop above to see the full RNG Meter analysis.</p>
+    </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<!-- ══ SPREADSHEET PAGE ══ -->
+<div class="page" id="page-sheet">
+    <div class="section-label" style="margin-bottom:16px">Slayer Profit Calculator (Community Spreadsheet)</div>
+    <div class="sheet-frame-wrap">
+        <div class="sheet-toolbar">
+            <span class="sheet-url">docs.google.com/spreadsheets/d/1JakV7Y_-D03lN9JDMSUdWpH5Z65DDcnR4UOkNnFsCow</span>
+            <a class="sheet-open-btn" href="https://docs.google.com/spreadsheets/d/1JakV7Y_-D03lN9JDMSUdWpH5Z65DDcnR4UOkNnFsCow/edit" target="_blank">↗ Open full screen</a>
+        </div>
+        <iframe class="sheet-iframe"
+                src="https://docs.google.com/spreadsheets/d/1JakV7Y_-D03lN9JDMSUdWpH5Z65DDcnR4UOkNnFsCow/preview"
+                allowfullscreen loading="lazy"></iframe>
+    </div>
+</div>
+
 <script>
-const DATABASE = {
-  "Zombie": {
-    "Revenant Horror T4": {
-      name: "Revenant Horror T4",
-      base_xp: 1000,
-      drops: [
-        { name: "Revenant Flesh", weight: 10000, pool: "TOKEN" },
-        { name: "Foul Flesh", weight: 2000, pool: "MAIN" },
-        { name: "Revenant Viscera", weight: 900, pool: "MAIN" },
-        { name: "Pestilence Rune I", weight: 600, pool: "MAIN" },
-        { name: "Undead Catalyst", weight: 100, pool: "MAIN" },
-        { name: "Revenant Catalyst", weight: 60, pool: "MAIN" },
-        { name: "Smite VI Book", weight: 40, pool: "MAIN" },
-        { name: "Beheaded Horror", weight: 18, pool: "MAIN" },
-        { name: "Snake Rune I", weight: 15, pool: "MAIN" },
-        { name: "Scythe Blade", weight: 8, pool: "MAIN" },
-        { name: "Shard of the Shredded", weight: 13, pool: "EXTRA" },
-        { name: "Undead Rune I", weight: 833, pool: "EXTRA" },
-      ]
-    },
-    "Revenant Horror T5": {
-      name: "Revenant Horror T5",
-      base_xp: 1500,
-      drops: [
-        { name: "Revenant Flesh", weight: 10000, pool: "TOKEN" },
-        { name: "Foul Flesh", weight: 1500, pool: "MAIN" },
-        { name: "Revenant Viscera", weight: 800, pool: "MAIN" },
-        { name: "Pestilence Rune I", weight: 400, pool: "MAIN" },
-        { name: "Undead Catalyst", weight: 90, pool: "MAIN" },
-        { name: "Revenant Catalyst", weight: 50, pool: "MAIN" },
-        { name: "Smite VII Book", weight: 30, pool: "MAIN" },
-        { name: "Beheaded Horror", weight: 16, pool: "MAIN" },
-        { name: "Snake Rune I", weight: 20, pool: "MAIN" },
-        { name: "Scythe Blade", weight: 8, pool: "MAIN" },
-        { name: "Shard of the Shredded", weight: 9, pool: "MAIN" },
-        { name: "Warden Heart", weight: 2, pool: "MAIN" },
-        { name: "Undead Rune I", weight: 833, pool: "EXTRA" },
-      ]
+    // ══════════════════════════════════════════════════════════════
+    // DATABASE
+    // Dyes use pool "DYE" with directChance field (base chance without MF)
+    // reqXp for dyes = Math.floor(500 / directChance) or 250 for Vampire
+    // ══════════════════════════════════════════════════════════════
+    const DATABASE = {
+        "Zombie": {
+            "Revenant Horror T1": { name:"Revenant Horror T1", base_xp:5, drops:[
+                    { name:"Revenant Flesh", weight:10000, pool:"TOKEN" }
+                ]},
+            "Revenant Horror T2": { name:"Revenant Horror T2", base_xp:25, drops:[
+                    { name:"Revenant Flesh", weight:10000, pool:"TOKEN" },
+                    { name:"Foul Flesh", weight:2000, pool:"MAIN" },
+                    { name:"Pestilence Rune", weight:83, pool:"EXTRA" },
+                    { name:"Undead Catalyst", weight:250, pool:"MAIN" },
+                    { name:"Revenant Catalyst", weight:125, pool:"MAIN" }
+                ]},
+            "Revenant Horror T3": { name:"Revenant Horror T3", base_xp:100, drops:[
+                    { name:"Revenant Flesh", weight:10000, pool:"TOKEN" },
+                    { name:"Foul Flesh", weight:2000, pool:"MAIN" },
+                    { name:"Pestilence Rune", weight:333, pool:"EXTRA" },
+                    { name:"Undead Catalyst", weight:250, pool:"MAIN" },
+                    { name:"Revenant Catalyst", weight:125, pool:"MAIN" },
+                    { name:"Smite 6 Book", weight:50, pool:"MAIN" },
+                    { name:"Beheaded Horror", weight:10, pool:"MAIN" }
+                ]},
+            "Revenant Horror T4": { name:"Revenant Horror T4", base_xp:500, drops:[
+                    { name:"Revenant Flesh", weight:10000, pool:"TOKEN" },
+                    { name:"Foul Flesh", weight:2000, pool:"MAIN" },
+                    { name:"Pestilence Rune", weight:833, pool:"EXTRA" },
+                    { name:"Undead Catalyst", weight:75, pool:"MAIN" },
+                    { name:"Smite 6 Book", weight:100, pool:"MAIN" },
+                    { name:"Beheaded Horror", weight:20, pool:"MAIN" },
+                    { name:"Revenant Catalyst", weight:125, pool:"MAIN" },
+                    { name:"Snake Rune", weight:20, pool:"EXTRA" },
+                    { name:"Scythe Blade", weight:7, pool:"MAIN" }
+                ]},
+            "Revenant Horror T5": { name:"Revenant Horror T5 (Atoned Horror)", base_xp:1500, drops:[
+                    { name:"Revenant Flesh", weight:10000, pool:"TOKEN" },
+                    { name:"Foul Flesh", weight:2000, pool:"MAIN" },
+                    { name:"Revenant Viscera", weight:2000, pool:"MAIN" },
+                    { name:"Pestilence Rune", weight:833, pool:"EXTRA" },
+                    { name:"Undead Catalyst", weight:250, pool:"MAIN" },
+                    { name:"Smite 6 Book", weight:100, pool:"MAIN" },
+                    { name:"Revenant Catalyst", weight:125, pool:"MAIN" },
+                    { name:"Beheaded Horror", weight:20, pool:"MAIN" },
+                    { name:"Snake Rune", weight:20, pool:"EXTRA" },
+                    { name:"Scythe Blade", weight:15, pool:"MAIN" },
+                    { name:"Shard of the Shredded", weight:8, pool:"MAIN" },
+                    { name:"Smite 7 Book", weight:7, pool:"MAIN" },
+                    { name:"Warden Heart", weight:2, pool:"MAIN" },
+                    { name:"Matcha Dye", pool:"DYE", directChance:0.000004, vampireMeter:false }
+                ]}
+        },
+        "Spider": {
+            "Tarantula Broodfather T1": { name:"Tarantula Broodfather T1", base_xp:5, drops:[
+                    { name:"Tarantula Web", weight:10000, pool:"TOKEN" }
+                ]},
+            "Tarantula Broodfather T2": { name:"Tarantula Broodfather T2", base_xp:25, drops:[
+                    { name:"Tarantula Web", weight:10000, pool:"TOKEN" },
+                    { name:"Toxic Arrow Poison", weight:1800, pool:"MAIN" },
+                    { name:"Bite Rune", weight:83, pool:"EXTRA" }
+                ]},
+            "Tarantula Broodfather T3": { name:"Tarantula Broodfather T3", base_xp:100, drops:[
+                    { name:"Tarantula Web", weight:10000, pool:"TOKEN" },
+                    { name:"Toxic Arrow Poison", weight:1800, pool:"MAIN" },
+                    { name:"Bite Rune", weight:333, pool:"EXTRA" },
+                    { name:"Spider Catalyst", weight:250, pool:"MAIN" },
+                    { name:"Bane of Arthropods 6 Book", weight:50, pool:"MAIN" },
+                    { name:"Fly Swatter", weight:10, pool:"MAIN" },
+                    { name:"Tarantula Talisman", weight:10, pool:"MAIN" }
+                ]},
+            "Tarantula Broodfather T4": { name:"Tarantula Broodfather T4", base_xp:500, drops:[
+                    { name:"Tarantula Web", weight:10000, pool:"TOKEN" },
+                    { name:"Toxic Arrow Poison", weight:1800, pool:"MAIN" },
+                    { name:"Bite Rune", weight:833, pool:"EXTRA" },
+                    { name:"Spider Catalyst", weight:75, pool:"MAIN" },
+                    { name:"Bane of Arthropods 6 Book", weight:100, pool:"MAIN" },
+                    { name:"Fly Swatter", weight:20, pool:"MAIN" },
+                    { name:"Tarantula Talisman", weight:20, pool:"MAIN" },
+                    { name:"Digested Mosquito", weight:7, pool:"MAIN" },
+                    { name:"Brick Red Dye", pool:"DYE", directChance:0.000002, vampireMeter:false }
+                ]}
+        },
+        "Wolf": {
+            "Sven Packmaster T1": { name:"Sven Packmaster T1", base_xp:5, drops:[
+                    { name:"Wolf Tooth", weight:10000, pool:"TOKEN" }
+                ]},
+            "Sven Packmaster T2": { name:"Sven Packmaster T2", base_xp:25, drops:[
+                    { name:"Wolf Tooth", weight:10000, pool:"TOKEN" },
+                    { name:"Hamster Wheel", weight:2000, pool:"MAIN" },
+                    { name:"Spirit Rune", weight:83, pool:"EXTRA" }
+                ]},
+            "Sven Packmaster T3": { name:"Sven Packmaster T3", base_xp:100, drops:[
+                    { name:"Wolf Tooth", weight:10000, pool:"TOKEN" },
+                    { name:"Hamster Wheel", weight:2000, pool:"MAIN" },
+                    { name:"Spirit Rune", weight:333, pool:"EXTRA" },
+                    { name:"Critical 6 Book", weight:50, pool:"MAIN" },
+                    { name:"Furball", weight:100, pool:"MAIN" },
+                    { name:"Red Claw Egg", weight:5, pool:"MAIN" }
+                ]},
+            "Sven Packmaster T4": { name:"Sven Packmaster T4", base_xp:500, drops:[
+                    { name:"Wolf Tooth", weight:10000, pool:"TOKEN" },
+                    { name:"Hamster Wheel", weight:2000, pool:"MAIN" },
+                    { name:"Spirit Rune", weight:833, pool:"EXTRA" },
+                    { name:"Critical 6 Book", weight:100, pool:"MAIN" },
+                    { name:"Furball", weight:200, pool:"MAIN" },
+                    { name:"Red Claw Egg", weight:15, pool:"MAIN" },
+                    { name:"Couture Rune", weight:30, pool:"EXTRA" },
+                    { name:"Overflux Capacitor", weight:5, pool:"MAIN" },
+                    { name:"Grizzly Salmon", weight:7, pool:"MAIN" },
+                    { name:"Celeste Dye", pool:"DYE", directChance:0.000002, vampireMeter:false }
+                ]}
+        },
+        "Enderman": {
+            "Voidgloom Seraph T1": { name:"Voidgloom Seraph T1", base_xp:5, drops:[
+                    { name:"Null Sphere", weight:10000, pool:"TOKEN" },
+                    { name:"Twilight Arrow Poison", weight:1800, pool:"MAIN" }
+                ]},
+            "Voidgloom Seraph T2": { name:"Voidgloom Seraph T2", base_xp:25, drops:[
+                    { name:"Null Sphere", weight:10000, pool:"TOKEN" },
+                    { name:"Twilight Arrow Poison", weight:1800, pool:"MAIN" },
+                    { name:"Summoning Eye", weight:80, pool:"MAIN" }
+                ]},
+            "Voidgloom Seraph T3": { name:"Voidgloom Seraph T3", base_xp:100, drops:[
+                    { name:"Null Sphere", weight:10000, pool:"TOKEN" },
+                    { name:"Twilight Arrow Poison", weight:1800, pool:"MAIN" },
+                    { name:"Endersnake Rune", weight:333, pool:"EXTRA" },
+                    { name:"Summoning Eye", weight:80, pool:"MAIN" },
+                    { name:"Mana Steal 1 Book", weight:600, pool:"MAIN" },
+                    { name:"Transmission Tuner", weight:300, pool:"MAIN" },
+                    { name:"Null Atom", weight:500, pool:"MAIN" },
+                    { name:"Hazmat Enderman", weight:140, pool:"MAIN" }
+                ]},
+            "Voidgloom Seraph T4": { name:"Voidgloom Seraph T4", base_xp:500, drops:[
+                    { name:"Null Sphere", weight:10000, pool:"TOKEN" },
+                    { name:"Twilight Arrow Poison", weight:1800, pool:"MAIN" },
+                    { name:"Endersnake Rune", weight:800, pool:"EXTRA" },
+                    { name:"Summoning Eye", weight:80, pool:"MAIN" },
+                    { name:"Mana Steal 1 Book", weight:600, pool:"MAIN" },
+                    { name:"Transmission Tuner", weight:300, pool:"MAIN" },
+                    { name:"Null Atom", weight:700, pool:"MAIN" },
+                    { name:"Hazmat Enderman", weight:220, pool:"MAIN" },
+                    { name:"Pocket Espresso Machine", weight:55, pool:"MAIN" },
+                    { name:"Smarty Pants 1 Book", weight:250, pool:"MAIN" },
+                    { name:"End Rune", weight:100, pool:"EXTRA" },
+                    { name:"Handy Blood Chalice", weight:25, pool:"MAIN" },
+                    { name:"Sinful Dice", weight:65, pool:"MAIN" },
+                    { name:"Exceedingly Rare Ender Artifact Upgrader", weight:4, pool:"MAIN" },
+                    { name:"Void Conquerer Enderman Skin", weight:25, pool:"EXTRA" },
+                    { name:"Etherwarp Merger", weight:60, pool:"MAIN" },
+                    { name:"Judgement Core", weight:8, pool:"MAIN" },
+                    { name:"Enchant Rune", weight:7, pool:"EXTRA" },
+                    { name:"Ender Slayer 7 Book", weight:2, pool:"MAIN" },
+                    { name:"Byzantium Dye", pool:"DYE", directChance:0.000002, vampireMeter:false }
+                ]}
+        },
+        "Blaze": {
+            "Inferno Demonlord T1": { name:"Inferno Demonlord T1", base_xp:5, drops:[
+                    { name:"Derelict Ashe", weight:10000, pool:"TOKEN" },
+                    { name:"Enchanted Blaze Powder", weight:2700, pool:"EXTRA" }
+                ]},
+            "Inferno Demonlord T2": { name:"Inferno Demonlord T2", base_xp:25, drops:[
+                    { name:"Derelict Ashe", weight:10000, pool:"TOKEN" },
+                    { name:"Enchanted Blaze Powder", weight:2700, pool:"EXTRA" },
+                    { name:"Lavatears Rune", weight:450, pool:"EXTRA" },
+                    { name:"Wisp's Ice-Flavored Water I Splash Potion", weight:500, pool:"MAIN" },
+                    { name:"Bundle Of Magma Arrows", weight:1500, pool:"MAIN" },
+                    { name:"Mana Disintegrator", weight:700, pool:"MAIN" },
+                    { name:"Scorched Books", weight:400, pool:"MAIN" },
+                    { name:"Kelvin Inverter", weight:500, pool:"MAIN" },
+                    { name:"Blaze Rod Distillate", weight:700, pool:"MAIN" },
+                    { name:"Glowstone Distillate", weight:700, pool:"MAIN" },
+                    { name:"Magma Cream Distillate", weight:700, pool:"MAIN" },
+                    { name:"Nether Wart Distillate", weight:700, pool:"MAIN" },
+                    { name:"Gabagool Distillate", weight:1400, pool:"MAIN" },
+                    { name:"Scorched Power Crystal", weight:1400, pool:"MAIN" }
+                ]},
+            "Inferno Demonlord T3": { name:"Inferno Demonlord T3", base_xp:100, drops:[
+                    { name:"Derelict Ashe", weight:10000, pool:"TOKEN" },
+                    { name:"Enchanted Blaze Powder", weight:2700, pool:"EXTRA" },
+                    { name:"Lavatears Rune", weight:450, pool:"EXTRA" },
+                    { name:"Wisp's Ice-Flavored Water I Splash Potion", weight:500, pool:"MAIN" },
+                    { name:"Bundle Of Magma Arrows", weight:1500, pool:"MAIN" },
+                    { name:"Mana Disintegrator", weight:700, pool:"MAIN" },
+                    { name:"Scorched Books", weight:400, pool:"MAIN" },
+                    { name:"Kelvin Inverter", weight:500, pool:"MAIN" },
+                    { name:"Blaze Rod Distillate", weight:700, pool:"MAIN" },
+                    { name:"Glowstone Distillate", weight:700, pool:"MAIN" },
+                    { name:"Magma Cream Distillate", weight:700, pool:"MAIN" },
+                    { name:"Nether Wart Distillate", weight:700, pool:"MAIN" },
+                    { name:"Gabagool Distillate", weight:1400, pool:"MAIN" },
+                    { name:"Scorched Power Crystal", weight:1400, pool:"MAIN" },
+                    { name:"Archfiend Dice", weight:200, pool:"MAIN" }
+                ]},
+            "Inferno Demonlord T4": { name:"Inferno Demonlord T4", base_xp:500, drops:[
+                    { name:"Derelict Ashe", weight:10000, pool:"TOKEN" },
+                    { name:"Enchanted Blaze Powder", weight:2700, pool:"EXTRA" },
+                    { name:"Lavatears Rune", weight:450, pool:"EXTRA" },
+                    { name:"Wisp's Ice-Flavored Water I Splash Potion", weight:500, pool:"MAIN" },
+                    { name:"Bundle Of Magma Arrows", weight:1500, pool:"MAIN" },
+                    { name:"Mana Disintegrator", weight:700, pool:"MAIN" },
+                    { name:"Scorched Books", weight:400, pool:"MAIN" },
+                    { name:"Kelvin Inverter", weight:500, pool:"MAIN" },
+                    { name:"Blaze Rod Distillate", weight:700, pool:"MAIN" },
+                    { name:"Glowstone Distillate", weight:700, pool:"MAIN" },
+                    { name:"Magma Cream Distillate", weight:700, pool:"MAIN" },
+                    { name:"Nether Wart Distillate", weight:700, pool:"MAIN" },
+                    { name:"Gabagool Distillate", weight:1400, pool:"MAIN" },
+                    { name:"Scorched Power Crystal", weight:1400, pool:"MAIN" },
+                    { name:"Archfiend Dice", weight:200, pool:"MAIN" },
+                    { name:"Fire Aspect 3 Book", weight:250, pool:"MAIN" },
+                    { name:"Fiery Burst Rune", weight:40, pool:"EXTRA" },
+                    { name:"Flawed Opal Gemstone", weight:550, pool:"MAIN" },
+                    { name:"Duplex 1 Book", weight:350, pool:"MAIN" },
+                    { name:"High Class Archfiend Dice", weight:50, pool:"EXTRA" },
+                    { name:"Wilson's Engineering Plans", weight:17, pool:"MAIN" },
+                    { name:"Subzero Inverter", weight:17, pool:"MAIN" },
+                    { name:"Flame Dye", pool:"DYE", directChance:0.000002, vampireMeter:false }
+                ]}
+        },
+        "Vampire": {
+            "Riftstalker Bloodfiend T1": { name:"Riftstalker Bloodfiend T1", base_xp:10, drops:[
+                    { name:"Coven Seal", weight:100, pool:"TOKEN" }
+                ]},
+            "Riftstalker Bloodfiend T2": { name:"Riftstalker Bloodfiend T2", base_xp:25, drops:[
+                    { name:"Coven Seal", weight:100, pool:"TOKEN" },
+                    { name:"Quantum Book Bundle", weight:20, pool:"MAIN" },
+                    { name:"Soultwist Rune", weight:20, pool:"EXTRA" },
+                    { name:"Bubba Blister", weight:15, pool:"MAIN" },
+                    { name:"Fang-tastic Chocolate Chip", weight:15, pool:"MAIN" }
+                ]},
+            "Riftstalker Bloodfiend T3": { name:"Riftstalker Bloodfiend T3", base_xp:60, drops:[
+                    { name:"Coven Seal", weight:100, pool:"TOKEN" },
+                    { name:"Quantum Book Bundle", weight:20, pool:"MAIN" },
+                    { name:"Soultwist Rune", weight:20, pool:"EXTRA" },
+                    { name:"Bubba Blister", weight:15, pool:"MAIN" },
+                    { name:"Fang-tastic Chocolate Chip", weight:15, pool:"MAIN" },
+                    { name:"Guardian Lucky Block", weight:10, pool:"MAIN" }
+                ]},
+            "Riftstalker Bloodfiend T4": { name:"Riftstalker Bloodfiend T4", base_xp:120, drops:[
+                    { name:"Coven Seal", weight:100, pool:"TOKEN" },
+                    { name:"Quantum Book Bundle", weight:20, pool:"MAIN" },
+                    { name:"Soultwist Rune", weight:20, pool:"EXTRA" },
+                    { name:"Bubba Blister", weight:15, pool:"MAIN" },
+                    { name:"Fang-tastic Chocolate Chip", weight:15, pool:"MAIN" },
+                    { name:"Guardian Lucky Block", weight:10, pool:"MAIN" },
+                    { name:"McGrubber's Burger", weight:2, pool:"MAIN" },
+                    { name:"Unfanged Vampire Part", weight:2, pool:"MAIN" }
+                ]},
+            "Riftstalker Bloodfiend T5": { name:"Riftstalker Bloodfiend T5", base_xp:150, drops:[
+                    { name:"Coven Seal", weight:100, pool:"TOKEN" },
+                    { name:"Quantum Book Bundle", weight:20, pool:"MAIN" },
+                    { name:"Soultwist Rune", weight:20, pool:"EXTRA" },
+                    { name:"Bubba Blister", weight:15, pool:"MAIN" },
+                    { name:"Fang-tastic Chocolate Chip", weight:15, pool:"MAIN" },
+                    { name:"Guardian Lucky Block", weight:10, pool:"MAIN" },
+                    { name:"McGrubber's Burger", weight:2, pool:"MAIN" },
+                    { name:"Unfanged Vampire Part", weight:2, pool:"MAIN" },
+                    { name:"The One Book Bundle", weight:3, pool:"MAIN" },
+                    { name:"Sangria Dye", pool:"DYE", directChance:0.0001, vampireMeter:true }
+                ]}
+        }
+    };
+
+    // ══════════════════════════════════════════════════════════════
+    // STATE
+    // ══════════════════════════════════════════════════════════════
+    let currentBoss = DATABASE["Zombie"]["Revenant Horror T4"];
+    let selectedDrop = null;
+    let aatrox = true;
+    let effChart = null;
+    let currentTab = 'optimal';
+
+    // ══════════════════════════════════════════════════════════════
+    // PAGE & TAB NAV
+    // ══════════════════════════════════════════════════════════════
+    function showPage(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('page-' + id).classList.add('active');
+        event.currentTarget.classList.add('active');
     }
-  },
-  "Spider": {
-    "Tarantula Broodfather T4": {
-      name: "Tarantula Broodfather T4",
-      base_xp: 400,
-      drops: [
-        { name: "Tarantula Web", weight: 10000, pool: "TOKEN" },
-        { name: "Spider Eye", weight: 3000, pool: "MAIN" },
-        { name: "String", weight: 2000, pool: "MAIN" },
-        { name: "Bite Rune I", weight: 600, pool: "MAIN" },
-        { name: "Spider Catalyst", weight: 120, pool: "MAIN" },
-        { name: "Digested Mosquito", weight: 200, pool: "MAIN" },
-        { name: "Tarantula Catalyst", weight: 30, pool: "MAIN" },
-        { name: "Tarantula Talisman", weight: 10, pool: "MAIN" },
-        { name: "Tarantula Pet (Epic)", weight: 18, pool: "MAIN" },
-        { name: "Tarantula Pet (Legendary)", weight: 3, pool: "MAIN" },
-        { name: "Toxic Arrow Poison", weight: 150, pool: "EXTRA" },
-        { name: "Venom Rune I", weight: 833, pool: "EXTRA" },
-      ]
-    },
-    "Tarantula Broodfather T5": {
-      name: "Tarantula Broodfather T5",
-      base_xp: 600,
-      drops: [
-        { name: "Tarantula Web", weight: 10000, pool: "TOKEN" },
-        { name: "Spider Eye", weight: 2500, pool: "MAIN" },
-        { name: "String", weight: 1500, pool: "MAIN" },
-        { name: "Bite Rune I", weight: 400, pool: "MAIN" },
-        { name: "Spider Catalyst", weight: 100, pool: "MAIN" },
-        { name: "Digested Mosquito", weight: 180, pool: "MAIN" },
-        { name: "Tarantula Catalyst", weight: 25, pool: "MAIN" },
-        { name: "Tarantula Talisman", weight: 8, pool: "MAIN" },
-        { name: "Tarantula Pet (Epic)", weight: 15, pool: "MAIN" },
-        { name: "Tarantula Pet (Legendary)", weight: 2, pool: "MAIN" },
-        { name: "Primordial Belt", weight: 5, pool: "MAIN" },
-        { name: "Toxic Arrow Poison", weight: 120, pool: "EXTRA" },
-        { name: "Venom Rune I", weight: 833, pool: "EXTRA" },
-      ]
+
+    function setTab(t) {
+        currentTab = t;
+        document.querySelectorAll('.tab').forEach((b, i) => {
+            b.classList.toggle('active', ['optimal','curve','strategy'][i] === t);
+        });
+        ['optimal','curve','strategy'].forEach(n => {
+            document.getElementById('tab-' + n).style.display = t === n ? '' : 'none';
+        });
+        if (t === 'curve' && selectedDrop !== null) renderChart();
     }
-  },
-  "Wolf": {
-    "Sven Packmaster T4": {
-      name: "Sven Packmaster T4",
-      base_xp: 500,
-      drops: [
-        { name: "Wolf Tooth", weight: 10000, pool: "TOKEN" },
-        { name: "Hamster Wheel", weight: 2000, pool: "MAIN" },
-        { name: "Critical VI Book", weight: 100, pool: "MAIN" },
-        { name: "Furball", weight: 200, pool: "MAIN" },
-        { name: "Red Claw Egg", weight: 15, pool: "MAIN" },
-        { name: "Overflux Capacitor", weight: 5, pool: "MAIN" },
-        { name: "Grizzly Salmon", weight: 7, pool: "MAIN" },
-        { name: "Spirit Rune I", weight: 833, pool: "EXTRA" },
-        { name: "Couture Rune I", weight: 30, pool: "EXTRA" },
-      ]
+
+    function setAatrox(val) {
+        aatrox = val;
+        document.getElementById('btn-aatrox-yes').classList.toggle('active', val);
+        document.getElementById('btn-aatrox-no').classList.toggle('active', !val);
+        if (selectedDrop !== null) compute();
     }
-  },
-  "Enderman": {
-    "Voidgloom Seraph T4": {
-      name: "Voidgloom Seraph T4",
-      base_xp: 1000,
-      drops: [
-        { name: "Null Sphere", weight: 10000, pool: "TOKEN" },
-        { name: "Null Atom", weight: 2000, pool: "MAIN" },
-        { name: "Mana Steal I Book", weight: 500, pool: "MAIN" },
-        { name: "Enderman Pet (Epic)", weight: 60, pool: "MAIN" },
-        { name: "Enderman Pet (Legendary)", weight: 12, pool: "MAIN" },
-        { name: "Judgement Core", weight: 5, pool: "MAIN" },
-        { name: "Transmission Tuner", weight: 20, pool: "MAIN" },
-        { name: "Etherwarp Merge", weight: 3, pool: "MAIN" },
-        { name: "Shadow Warp I Rune", weight: 200, pool: "EXTRA" },
-        { name: "Wither Shield I Rune", weight: 100, pool: "EXTRA" },
-        { name: "Ice Rune I", weight: 833, pool: "EXTRA" },
-      ]
+
+    // ══════════════════════════════════════════════════════════════
+    // SELECTORS
+    // ══════════════════════════════════════════════════════════════
+    function initSelectors() {
+        const actSel = document.getElementById('sel-activity');
+        Object.keys(DATABASE).forEach(type => {
+            const o = document.createElement('option');
+            o.value = type; o.textContent = type;
+            actSel.appendChild(o);
+        });
+        actSel.value = 'Zombie';
+        updateBossSelector();
+        actSel.addEventListener('change', () => updateBossSelector());
     }
-  },
-  "Blaze": {
-    "Inferno Demonlord T4": {
-      name: "Inferno Demonlord T4",
-      base_xp: 1000,
-      drops: [
-        { name: "Derelict Ashe", weight: 10000, pool: "TOKEN" },
-        { name: "Mage Blood", weight: 2000, pool: "MAIN" },
-        { name: "Fire Aspect III Book", weight: 800, pool: "MAIN" },
-        { name: "Scorched Power Crystal", weight: 300, pool: "MAIN" },
-        { name: "Plasma Bucket", weight: 200, pool: "MAIN" },
-        { name: "Blaze Rod", weight: 500, pool: "MAIN" },
-        { name: "Hellfire Rod", weight: 20, pool: "MAIN" },
-        { name: "Demonlord Pet (Rare)", weight: 50, pool: "MAIN" },
-        { name: "Demonlord Pet (Epic)", weight: 8, pool: "MAIN" },
-        { name: "Inferno Fuel Block", weight: 400, pool: "EXTRA" },
-        { name: "Fiery Rune I", weight: 833, pool: "EXTRA" },
-      ]
+
+    function updateBossSelector() {
+        const type = document.getElementById('sel-activity').value;
+        const bossSel = document.getElementById('sel-boss');
+        bossSel.innerHTML = '';
+        Object.keys(DATABASE[type]).forEach(bossKey => {
+            const o = document.createElement('option');
+            o.value = bossKey; o.textContent = bossKey;
+            bossSel.appendChild(o);
+        });
+        bossSel.value = Object.keys(DATABASE[type]).at(-1);
+        onBossChange();
+        bossSel.addEventListener('change', onBossChange);
     }
-  },
-  "Vampire": {
-    "Riftstalker Bloodfiend T4": {
-      name: "Riftstalker Bloodfiend T4",
-      base_xp: 150,
-      drops: [
-        { name: "Coven Seal", weight: 10000, pool: "TOKEN" },
-        { name: "Vampire Fang", weight: 3000, pool: "MAIN" },
-        { name: "Blood Ichors", weight: 1500, pool: "MAIN" },
-        { name: "Hematemesis I Rune", weight: 400, pool: "MAIN" },
-        { name: "Caduceus Rod", weight: 100, pool: "MAIN" },
-        { name: "Sanguinite", weight: 200, pool: "MAIN" },
-        { name: "Twilight Rune I", weight: 300, pool: "MAIN" },
-        { name: "Adrenaline", weight: 15, pool: "MAIN" },
-        { name: "Vampire Rune I", weight: 833, pool: "EXTRA" },
-      ]
+
+    function onBossChange() {
+        const type = document.getElementById('sel-activity').value;
+        const bossKey = document.getElementById('sel-boss').value;
+        currentBoss = DATABASE[type][bossKey];
+        selectedDrop = null;
+        if (effChart) { effChart.destroy(); effChart = null; }
+        document.getElementById('results-section').style.display = 'none';
+        document.getElementById('no-target').style.display = '';
+        buildDropGrid();
     }
-  }
-};
 
-let currentBoss = DATABASE["Wolf"]["Sven Packmaster T4"];
-let selectedDrop = null;
-let aatrox = true;
-let effChart = null;
-let currentTab = 'optimal';
+    // ══════════════════════════════════════════════════════════════
+    // WEIGHT COMPUTATION
+    // ══════════════════════════════════════════════════════════════
+    function computeWeights(drops, mf) {
+        const nonDye = drops.filter(d => d.pool !== 'DYE');
+        const sumAllRaw = nonDye.reduce((s, d) => s + d.weight, 0);
 
-function setAatrox(val) {
-  aatrox = val;
-  document.getElementById('btn-aatrox-yes').classList.toggle('active', val);
-  document.getElementById('btn-aatrox-no').classList.toggle('active', !val);
-  if (selectedDrop !== null) compute();
-}
+        const baseChances = {};
+        nonDye.forEach(d => {
+            baseChances[d.name] = d.pool === 'TOKEN' ? 1.0 : d.weight / sumAllRaw;
+        });
 
-function initSelectors() {
-  const actSel = document.getElementById('sel-activity');
-  Object.keys(DATABASE).forEach(type => {
-    const o = document.createElement('option');
-    o.value = type; o.textContent = type;
-    actSel.appendChild(o);
-  });
-  actSel.value = 'Wolf';
-  updateBossSelector();
-  actSel.addEventListener('change', () => { updateBossSelector(); });
-}
+        const mfW = {};
+        nonDye.forEach(d => {
+            if (d.pool === 'TOKEN') {
+                mfW[d.name] = d.weight;
+            } else {
+                mfW[d.name] = baseChances[d.name] < 0.05 ? d.weight * (1 + mf / 100) : d.weight;
+            }
+        });
 
-function updateBossSelector() {
-  const type = document.getElementById('sel-activity').value;
-  const bossSel = document.getElementById('sel-boss');
-  bossSel.innerHTML = '';
-  Object.keys(DATABASE[type]).forEach(bossKey => {
-    const o = document.createElement('option');
-    o.value = bossKey; o.textContent = bossKey;
-    bossSel.appendChild(o);
-  });
-  bossSel.value = Object.keys(DATABASE[type])[Object.keys(DATABASE[type]).length - 1];
-  onBossChange();
-  bossSel.addEventListener('change', onBossChange);
-}
+        const tokenWeight = nonDye.filter(d => d.pool === 'TOKEN').reduce((s, d) => s + d.weight, 0);
+        const mainMods = nonDye.filter(d => d.pool === 'MAIN').reduce((s, d) => s + mfW[d.name], 0);
+        const extraMods = nonDye.filter(d => d.pool === 'EXTRA').reduce((s, d) => s + mfW[d.name], 0);
 
-function onBossChange() {
-  const type = document.getElementById('sel-activity').value;
-  const bossKey = document.getElementById('sel-boss').value;
-  currentBoss = DATABASE[type][bossKey];
-  selectedDrop = null;
-  if (effChart) { effChart.destroy(); effChart = null; }
-  document.getElementById('results-section').style.display = 'none';
-  document.getElementById('no-target').style.display = '';
-  buildDropGrid();
-}
-
-function setTab(t) {
-  currentTab = t;
-  document.querySelectorAll('.tab').forEach((b,i) => {
-    b.classList.toggle('active', ['optimal','curve','strategy'][i] === t);
-  });
-  document.getElementById('tab-optimal').style.display = t === 'optimal' ? '' : 'none';
-  document.getElementById('tab-curve').style.display = t === 'curve' ? '' : 'none';
-  document.getElementById('tab-strategy').style.display = t === 'strategy' ? '' : 'none';
-  if (t === 'curve' && selectedDrop !== null) renderChart();
-}
-
-function computeWeights(drops, mf) {
-  const tokenMain = drops.filter(d => d.pool !== 'EXTRA').reduce((s,d) => s+d.weight, 0);
-  const allW = drops.reduce((s,d) => s+d.weight, 0);
-  const baseChances = {};
-  drops.forEach(d => {
-    baseChances[d.name] = d.pool !== 'EXTRA' ? d.weight/tokenMain : d.weight/allW;
-  });
-  const mfW = {};
-  drops.forEach(d => {
-    mfW[d.name] = baseChances[d.name] < 0.05 ? d.weight*(1+mf/100) : d.weight*1.0;
-  });
-  const mfTM = drops.filter(d => d.pool !== 'EXTRA').reduce((s,d) => s+mfW[d.name], 0);
-  const mfAll = drops.reduce((s,d) => s+mfW[d.name], 0);
-  return { mfW, mfTM, mfAll, baseChances };
-}
-
-function solveOptimal(drop, drops, mf, pityLevel, aatroxOn) {
-  const { mfW, mfTM, mfAll, baseChances } = computeWeights(drops, mf);
-  const baseChancePct = baseChances[drop.name] * 100;
-  const reqXp = Math.floor(50000 / baseChancePct);
-  const aatroxMult = aatroxOn ? 1.25 : 1.0;
-  const pityMult = 1 + pityLevel * 0.01;
-  const xpPerRun = currentBoss.base_xp * aatroxMult * pityMult;
-  const m = Math.ceil(reqXp / xpPerRun);
-  const baseTW = mfW[drop.name];
-  const poolTotal = drop.pool !== 'EXTRA' ? mfTM : mfAll;
-  const p = baseTW / poolTotal;
-
-  let bestL = 0, maxEff = 0, currentS = 1.0, sumS = 0.0;
-  const effByL = [];
-
-  for (let L = 0; L <= m; L++) {
-    const num = 1 + currentS * (m - L) * p;
-    const den = sumS + currentS * (m - L + 1);
-    const eff = num / den;
-    effByL.push({ L, eff, pct: (L / m) * 100 });
-    if (eff > maxEff) { maxEff = eff; bestL = L; }
-
-    if (L < m) {
-      const storedXp = L * xpPerRun;
-      const mult = 1 + Math.min(2 * (storedXp / reqXp), 2);
-      const boostedW = baseTW * mult;
-      const curTotal = drop.pool !== 'EXTRA' ? mfTM - baseTW + boostedW : mfAll - baseTW + boostedW;
-      const pL = boostedW / curTotal;
-      sumS += currentS;
-      currentS *= (1 - pL);
+        return {
+            mfW, baseChances,
+            mainDenom: tokenWeight + mainMods,
+            extraDenom: tokenWeight + mainMods + extraMods
+        };
     }
-  }
 
-  const baselineEff = (1 + m * p) / (m + 1);
-  const gain = ((maxEff / baselineEff) - 1) * 100;
-  const baseChanceNoMF = baseChances[drop.name];
+    // ══════════════════════════════════════════════════════════════
+    // PITY (reqXP) — Correct Hypixel formula
+    // reqXp = floor(500 / highestBaseChance)  (non-vampire)
+    // reqXp = floor(250 / highestBaseChance)  (vampire)
+    // For dyes: uses directChance directly
+    // ══════════════════════════════════════════════════════════════
+    function getReqXp(drop, drops, isVampire) {
+        if (drop.pool === 'DYE') {
+            const mult = drop.vampireMeter ? 250 : 500;
+            return Math.floor(mult / drop.directChance);
+        }
+        const nonDye = drops.filter(d => d.pool !== 'DYE');
+        const sumAllRaw = nonDye.reduce((s, d) => s + d.weight, 0);
+        const baseChance = drop.pool === 'TOKEN'
+            ? nonDye.filter(d => d.pool !== 'EXTRA').reduce((s, d) => s + d.weight, 0) / sumAllRaw
+            : drop.weight / sumAllRaw;
+        const mult = isVampire ? 250 : 500;
+        return Math.floor(mult / baseChance);
+    }
 
-  return { bestL, maxEff, m, p, baseChanceNoMF, reqXp, xpPerRun, baselineEff, gain, effByL, pct: (bestL/m)*100 };
-}
+    // ══════════════════════════════════════════════════════════════
+    // DROP GRID
+    // ══════════════════════════════════════════════════════════════
+    function buildDropGrid() {
+        const grid = document.getElementById('drop-grid');
+        grid.innerHTML = '';
+        const mf = parseInt(document.getElementById('val-mf').value) || 0;
+        const { mfW, baseChances, mainDenom, extraDenom } = computeWeights(currentBoss.drops, mf);
 
-function buildDropGrid() {
-  const grid = document.getElementById('drop-grid');
-  grid.innerHTML = '';
-  const { baseChances } = computeWeights(currentBoss.drops, 0);
-  currentBoss.drops.forEach((d, i) => {
-    const pct = baseChances[d.name] * 100;
-    const btn = document.createElement('button');
-    btn.className = 'drop-btn' + (selectedDrop === i ? ' active' : '');
-    const poolClass = d.pool === 'MAIN' ? 'pool-main' : d.pool === 'EXTRA' ? 'pool-extra' : 'pool-token';
-    btn.innerHTML = `<div class="drop-name">${d.name}</div>
-      <div class="drop-chance">~${pct < 0.1 ? pct.toFixed(3) : pct.toFixed(2)}% base</div>
-      <div class="drop-pool ${poolClass}">${d.pool}</div>`;
-    btn.onclick = () => { selectedDrop = i; buildDropGrid(); compute(); };
-    grid.appendChild(btn);
-  });
-}
+        currentBoss.drops.forEach((d, i) => {
+            let pct, isDye = d.pool === 'DYE';
 
-function compute() {
-  if (selectedDrop === null) return;
-  const drop = currentBoss.drops[selectedDrop];
-  const mf = parseInt(document.getElementById('val-mf').value) || 0;
-  const pity = parseInt(document.getElementById('val-pity').value) || 0;
-  const res = solveOptimal(drop, currentBoss.drops, mf, pity, aatrox);
+            if (isDye) {
+                // Chance with MF (dye is always <5%, MF applies)
+                pct = d.directChance * (1 + mf / 100) * 100;
+            } else if (d.pool === 'TOKEN') {
+                pct = 100;
+            } else {
+                const denom = d.pool === 'MAIN' ? mainDenom : extraDenom;
+                pct = (mfW[d.name] / denom) * 100;
+            }
 
-  document.getElementById('results-section').style.display = '';
-  document.getElementById('no-target').style.display = 'none';
+            const btn = document.createElement('button');
+            btn.className = 'drop-btn' + (selectedDrop === i ? ' active' : '') + (isDye ? ' dye-btn' : '');
+            const poolClass = isDye ? 'pool-dye' : d.pool === 'MAIN' ? 'pool-main' : d.pool === 'EXTRA' ? 'pool-extra' : 'pool-token';
+            const isBoosted = !isDye && mf > 0 && baseChances[d.name] !== undefined && baseChances[d.name] < 0.05 && d.pool !== 'TOKEN';
+            const chanceClass = isBoosted || isDye ? 'drop-chance boosted' : 'drop-chance';
+            const poolLabel = isDye ? 'DYE ★' : d.pool;
 
-  document.getElementById('r-req-xp').textContent = res.reqXp.toLocaleString();
-  document.getElementById('r-m').textContent = res.m.toLocaleString();
-  document.getElementById('r-xp-run').textContent = res.xpPerRun.toFixed(0) + ' XP/run';
-  document.getElementById('r-base-chance').textContent = (res.baseChanceNoMF*100).toFixed(4) + '%';
-  document.getElementById('r-base-1in').textContent = '1 in ' + Math.round(1/res.baseChanceNoMF).toLocaleString();
-  document.getElementById('r-mf-chance').textContent = (res.p*100).toFixed(4) + '%';
-  document.getElementById('r-mf-1in').textContent = '1 in ' + Math.round(1/res.p).toLocaleString();
+            btn.innerHTML = `<div class="drop-name">${d.name}</div>
+      <div class="${chanceClass}">~${pct < 0.001 ? pct.toFixed(6) : pct < 0.1 ? pct.toFixed(4) : pct.toFixed(2)}%</div>
+      <div class="drop-pool ${poolClass}">${poolLabel}</div>`;
+            btn.onclick = () => { selectedDrop = i; buildDropGrid(); compute(); };
+            grid.appendChild(btn);
+        });
+    }
 
-  document.getElementById('r-best-l').textContent = res.bestL.toLocaleString() + ' runs';
-  document.getElementById('r-best-pct').textContent = res.pct.toFixed(1) + '%';
-  document.getElementById('r-gain').textContent = '+' + res.gain.toFixed(2) + '%';
-  document.getElementById('r-opt-rate').textContent = '1 in ' + Math.round(1/res.maxEff).toLocaleString();
-  document.getElementById('r-base-rate').textContent = '1 in ' + Math.round(1/res.baselineEff).toLocaleString();
+    // ══════════════════════════════════════════════════════════════
+    // SOLVE OPTIMAL
+    // ══════════════════════════════════════════════════════════════
+    function solveOptimal(drop, drops, mf, pityLevel, aatroxOn, isVampire) {
+        const { mfW, baseChances, mainDenom, extraDenom } = computeWeights(drops, mf);
 
-  const pBar = document.getElementById('progress-bar');
-  pBar.style.width = Math.min(res.pct, 100).toFixed(1) + '%';
-  document.getElementById('prog-label').textContent = res.pct.toFixed(1) + '%';
+        const isDye = drop.pool === 'DYE';
+        const meterProgress = Math.min(Math.max(parseFloat(document.getElementById('val-meter').value) || 0, 0), 100) / 100;
 
-  buildAdvice(drop, res, mf);
-  buildStrategy(drop, res, mf, pity);
+        // Effective chance with MF (and current meter if >0)
+        let baseChanceNoMF, p;
+        if (isDye) {
+            baseChanceNoMF = drop.directChance;
+            p = drop.directChance * (1 + mf / 100);
+        } else if (drop.pool === 'TOKEN') {
+            baseChanceNoMF = 1.0;
+            p = 1.0;
+        } else {
+            baseChanceNoMF = baseChances[drop.name];
+            const denom = drop.pool === 'MAIN' ? mainDenom : extraDenom;
+            const baseTW = mfW[drop.name];
+            // If meter in progress, calculate current boost
+            if (meterProgress > 0) {
+                const reqXp = getReqXp(drop, drops, isVampire);
+                const aatroxMult = aatroxOn ? 1.25 : 1.0;
+                const pityMult = 1 + pityLevel * 0.01;
+                const xpPerRun = currentBoss.base_xp * aatroxMult * pityMult;
+                const storedXp = meterProgress * reqXp;
+                const mult = 1 + Math.min(2 * (storedXp / reqXp), 2);
+                const boostedW = baseTW * mult;
+                p = boostedW / (denom - baseTW + boostedW);
+            } else {
+                p = baseTW / denom;
+            }
+        }
 
-  if (currentTab === 'curve') renderChart(res);
-  window._lastRes = res;
-}
+        const reqXp = getReqXp(drop, drops, isVampire);
+        const aatroxMult = aatroxOn ? 1.25 : 1.0;
+        const pityMult = 1 + pityLevel * 0.01;
+        const xpPerRun = currentBoss.base_xp * aatroxMult * pityMult;
+        const m = Math.ceil(reqXp / xpPerRun);
 
-function buildAdvice(drop, res, mf) {
-  const box = document.getElementById('advice-box');
-  const txt = document.getElementById('advice-text');
-  let msg = '';
-  const pct = res.pct;
+        if (isDye) {
+            // Dyes: meter doesn't apply to them yet (added to meter but simplified calc)
+            // Shows simple analysis based on expected runs
+            const baseline = p;
+            return {
+                bestL: 0, maxEff: baseline, m, p: baseline, baseChanceNoMF,
+                reqXp, xpPerRun, baselineEff: baseline, gain: 0,
+                effByL: [], pct: 0, isDye: true
+            };
+        }
 
-  if (res.bestL === 0) {
-    msg = `For <strong>${drop.name}</strong>, the optimal strategy is to <strong>never turn the meter ON</strong> (L*=0). This happens because XP per run is high and the marginal gain from the meter does not offset the reset risk. Let it accumulate and use the pity guarantee.`;
-    box.className = 'warn-card';
-  } else if (pct <= 40) {
-    msg = `Keep the meter ON only for the <strong>first ${res.bestL} runs (${pct.toFixed(0)}% of the meter)</strong>, then turn it off. Early meter boosts drop chance without risking much accumulated progress.`;
-    box.className = 'advice-box';
-  } else if (pct <= 70) {
-    msg = `The sweet spot is at <strong>${pct.toFixed(0)}% of the meter (${res.bestL} runs)</strong>. Keep the meter ON normally and turn it off when you reach this point. This gives <strong>+${res.gain.toFixed(1)}%</strong> more drops compared to leaving it always off.`;
-    box.className = 'advice-box';
-  } else {
-    msg = `With your Magic Find of <strong>${mf}</strong>, the meter is worth keeping ON until <strong>${pct.toFixed(0)}%</strong>. High MF shifts the sweet spot later because the per-run chance boost compensates more for resets.`;
-    box.className = 'advice-box';
-  }
-  txt.innerHTML = msg;
-}
+        const baseTW = mfW[drop.name];
+        const denom = drop.pool === 'MAIN' ? mainDenom : extraDenom;
+        const pBase = baseTW / denom;
 
-function buildStrategy(drop, res, mf, pity) {
-  const el = document.getElementById('strategy-content');
-  const isRare = res.baseChanceNoMF < 0.005;
-  const mfImpact = mf > 0 && res.baseChanceNoMF < 0.05;
-  const bigGain = res.gain > 3;
+        let bestL = 0, maxEff = 0, currentS = 1.0, sumS = 0.0;
+        const effByL = [];
 
-  el.innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <div class="metric-card">
-        <div class="metric-label" style="margin-bottom:8px">How Magic Find affects the strategy</div>
-        <p style="font-size:13px;color:var(--color-text-secondary);line-height:1.7">
-          MF only applies when the item's final drop chance is <strong style="color:var(--color-text-primary)">below 5%</strong>.
-          For ${drop.name} (base ~${(res.baseChanceNoMF*100).toFixed(3)}%), MF ${mfImpact ? '<strong style="color:var(--color-text-success)">applies</strong>' : '<strong style="color:var(--color-text-danger)">does not apply</strong>'}.
-          With MF ${mf}, the multiplier is <strong style="color:var(--color-text-primary)">${(1+mf/100).toFixed(2)}x</strong> over the base weight.
-          Higher MF shifts the sweet spot later because the per-run boost compensates more, reducing the cost of an accidental reset.
+        for (let L = 0; L <= m; L++) {
+            const num = 1 + currentS * (m - L) * pBase;
+            const den = sumS + currentS * (m - L + 1);
+            const eff = num / den;
+            effByL.push({ L, eff, pct: (L / m) * 100 });
+            if (eff > maxEff) { maxEff = eff; bestL = L; }
+
+            if (L < m) {
+                const storedXp = L * xpPerRun;
+                const mult = 1 + Math.min(2 * (storedXp / reqXp), 2);
+                const boostedW = baseTW * mult;
+                const curTotal = denom - baseTW + boostedW;
+                const pL = boostedW / curTotal;
+                sumS += currentS;
+                currentS *= (1 - pL);
+            }
+        }
+
+        const baselineEff = (1 + m * pBase) / (m + 1);
+        const gain = ((maxEff / baselineEff) - 1) * 100;
+
+        return { bestL, maxEff, m, p, baseChanceNoMF, reqXp, xpPerRun, baselineEff, gain, effByL, pct: (bestL / m) * 100, isDye: false };
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // COMPUTE & RENDER
+    // ══════════════════════════════════════════════════════════════
+    function compute() {
+        if (selectedDrop === null) return;
+        const drop = currentBoss.drops[selectedDrop];
+        const mf = parseInt(document.getElementById('val-mf').value) || 0;
+        const pity = parseInt(document.getElementById('val-pity').value) || 0;
+        const isVampire = document.getElementById('sel-activity').value === 'Vampire';
+        const res = solveOptimal(drop, currentBoss.drops, mf, pity, aatrox, isVampire);
+
+        document.getElementById('results-section').style.display = '';
+        document.getElementById('no-target').style.display = 'none';
+
+        document.getElementById('r-req-xp').textContent = res.reqXp.toLocaleString();
+        document.getElementById('r-m').textContent = res.m.toLocaleString();
+        document.getElementById('r-xp-run').textContent = res.xpPerRun.toFixed(0) + ' XP/run';
+
+        const fmt = v => v < 0.0001 ? (v * 100).toFixed(6) + '%' : v < 0.001 ? (v * 100).toFixed(4) + '%' : (v * 100).toFixed(4) + '%';
+        document.getElementById('r-base-chance').textContent = fmt(res.baseChanceNoMF);
+        document.getElementById('r-base-1in').textContent = '1 in ' + Math.round(1 / res.baseChanceNoMF).toLocaleString();
+        document.getElementById('r-mf-chance').textContent = fmt(res.p);
+        document.getElementById('r-mf-1in').textContent = '1 in ' + Math.round(1 / res.p).toLocaleString();
+
+        if (res.isDye) {
+            document.getElementById('r-best-l').textContent = 'N/A';
+            document.getElementById('r-best-pct').textContent = 'N/A';
+            document.getElementById('r-gain').textContent = 'N/A';
+            document.getElementById('r-opt-rate').textContent = '1 in ' + Math.round(1 / res.p).toLocaleString();
+            document.getElementById('r-base-rate').textContent = '1 in ' + Math.round(1 / res.baseChanceNoMF).toLocaleString();
+            document.getElementById('progress-bar').style.width = '0%';
+            document.getElementById('prog-label').textContent = 'DYE (direct drop)';
+            const box = document.getElementById('advice-box');
+            box.className = 'advice warn';
+            document.getElementById('advice-text').innerHTML = `<strong>${drop.name}</strong> is a direct drop (outside the normal weight system). There is no RNG Meter calculated for dyes — the tool only shows the drop chance with your Magic Find. With ${mf} MF, the chance is approximately <strong>1 in ${Math.round(1/res.p).toLocaleString()}</strong> per boss.`;
+            buildStrategy(drop, res, mf, pity, isVampire);
+            if (currentTab === 'curve') renderChart(res);
+            window._lastRes = res;
+            return;
+        }
+
+        document.getElementById('r-best-l').textContent = res.bestL.toLocaleString() + ' runs';
+        document.getElementById('r-best-pct').textContent = res.pct.toFixed(1) + '%';
+        document.getElementById('r-gain').textContent = '+' + res.gain.toFixed(2) + '%';
+        document.getElementById('r-opt-rate').textContent = '1 in ' + Math.round(1 / res.maxEff).toLocaleString();
+        document.getElementById('r-base-rate').textContent = '1 in ' + Math.round(1 / res.baselineEff).toLocaleString();
+
+        document.getElementById('progress-bar').style.width = Math.min(res.pct, 100).toFixed(1) + '%';
+        document.getElementById('prog-label').textContent = res.pct.toFixed(1) + '%';
+
+        buildAdvice(drop, res, mf);
+        buildStrategy(drop, res, mf, pity, isVampire);
+        if (currentTab === 'curve') renderChart(res);
+        window._lastRes = res;
+    }
+
+    function buildAdvice(drop, res, mf) {
+        const box = document.getElementById('advice-box');
+        const txt = document.getElementById('advice-text');
+        const pct = res.pct;
+        let msg = '';
+        if (res.bestL === 0) {
+            box.className = 'advice warn';
+            msg = `For <strong>${drop.name}</strong>, the optimal strategy is to <strong>never turn the meter ON</strong> (L*=0). The XP per run is high and the marginal gain from the meter does not compensate for the reset risk.`;
+        } else if (pct <= 40) {
+            box.className = 'advice';
+            msg = `Keep the meter ON only for the <strong>first ${res.bestL} runs (${pct.toFixed(0)}% of the meter)</strong>, then turn it off. The early meter boosts the chance without risking much accumulated progress.`;
+        } else if (pct <= 70) {
+            box.className = 'advice';
+            msg = `The sweet spot is at <strong>${pct.toFixed(0)}% of the meter (${res.bestL} runs)</strong>. Keep the meter ON normally and turn it off upon reaching this point. This yields <strong>+${res.gain.toFixed(1)}%</strong> more drops compared to not using the meter.`;
+        } else {
+            box.className = 'advice';
+            msg = `With <strong>${mf}</strong> Magic Find, it's worth keeping the meter ON until <strong>${pct.toFixed(0)}%</strong>. High MF shifts the sweet spot to later.`;
+        }
+        txt.innerHTML = msg;
+    }
+
+    function buildStrategy(drop, res, mf, pity, isVampire) {
+        const el = document.getElementById('strategy-content');
+        const mfImpact = mf > 0 && res.baseChanceNoMF < 0.05;
+        const bigGain = res.gain > 3;
+        const meterMult = isVampire ? 250 : 500;
+
+        if (res.isDye) {
+            el.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card">
+        <div class="metric-label" style="margin-bottom:8px">Dyes — Separate System</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.7">
+          Dyes like <strong style="color:var(--text)">${drop.name}</strong> were added to the RNG Meters in Jan/2025 (patch 0.21.1), but they function outside the normal loot table weight system.
+          The drop chance is direct: base <strong style="color:var(--text)">${(res.baseChanceNoMF*100).toFixed(6)}%</strong>, with ${mf} MF: <strong style="color:var(--green)">${(res.p*100).toFixed(6)}%</strong>.
+          Magic Find always applies (chance is always &lt;5%).
         </p>
       </div>
-      <div class="metric-card">
-        <div class="metric-label" style="margin-bottom:8px">Weight boost vs. direct chance increase</div>
-        <p style="font-size:13px;color:var(--color-text-secondary);line-height:1.7">
-          The RNG Meter <strong style="color:var(--color-text-primary)">increases the item's weight</strong> (up to 3x), not the drop chance directly.
-          This means the total loot pool grows, slightly reducing the chance of other drops.
-          The real formula is: <code style="font-size:12px;background:var(--color-background-secondary);padding:1px 4px;border-radius:3px">p_L = boostedWeight / (poolTotal - baseWeight + boostedWeight)</code>.
-          For very rare items (small weight), the difference between +weight and +chance is negligible, but for common items it can exceed 5%.
-        </p>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label" style="margin-bottom:8px">Strategic conclusion</div>
-        <p style="font-size:13px;color:var(--color-text-secondary);line-height:1.7">
-          ${bigGain
-            ? `The gain of <strong style="color:var(--color-text-success)">+${res.gain.toFixed(1)}%</strong> is significant for ${drop.name}. Using the sweet spot strategy is worthwhile.`
-            : `The gain of <strong style="color:var(--color-text-primary)">+${res.gain.toFixed(1)}%</strong> is small. The practical difference over long sessions is marginal.`}
-          ${res.bestL === 0
-            ? ' In this specific case: <strong style="color:var(--color-text-warning)">never turn the meter ON</strong> — let XP accumulate and collect the pity guarantee.'
-            : ` Recommended strategy: <strong style="color:var(--color-text-primary)">keep meter ON for the first ${res.bestL} runs (${res.pct.toFixed(0)}%)</strong>, then turn it off and run without meter.`}
-          Aatrox ${aatrox ? 'active (+25% XP)' : 'inactive'} → ${res.xpPerRun.toFixed(0)} XP/run → pity in ${res.m} runs.
-          ${pity > 0 ? `Pity attribute level ${pity} (+${pity}% XP) reduces the number of runs to pity.` : ''}
+      <div class="card card-gold">
+        <div class="metric-label" style="margin-bottom:8px">Expected runs</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.7">
+          With ${mf} MF, you can expect a drop every <strong style="color:var(--gold)">${Math.round(1/res.p).toLocaleString()} runs</strong>.
+          This equals ~${(Math.round(1/res.p) * currentBoss.base_xp * (aatrox?1.25:1)).toLocaleString()} slayer XP per dye.
         </p>
       </div>
     </div>`;
-}
-
-function renderChart(res) {
-  res = res || window._lastRes;
-  if (!res) return;
-  const labels = res.effByL.map(x => x.L);
-  const vals = res.effByL.map(x => (1/x.eff).toFixed(1));
-  const colors = res.effByL.map(x => x.L === res.bestL ? '#E24B4A' : '#1D9E75');
-
-  if (effChart) { effChart.destroy(); effChart = null; }
-
-  const ctx = document.getElementById('eff-chart').getContext('2d');
-  effChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: '1 in N runs for drop',
-        data: res.effByL.map(x => parseFloat((1/x.eff).toFixed(1))),
-        borderColor: '#1D9E75',
-        backgroundColor: 'rgba(29,158,117,0.08)',
-        fill: true,
-        pointRadius: res.effByL.map(x => x.L === res.bestL ? 6 : 2),
-        pointBackgroundColor: colors,
-        pointBorderColor: colors,
-        tension: 0.3,
-        borderWidth: 2
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => `1 in ${ctx.parsed.y} runs | ${((ctx.dataIndex/res.m)*100).toFixed(0)}% of meter`
-          }
+            return;
         }
-      },
-      scales: {
-        x: {
-          title: { display: true, text: 'Runs with meter ON (L)', color: '#888780', font: { size: 11 } },
-          ticks: { maxTicksLimit: 10, color: '#888780' },
-          grid: { color: 'rgba(136,135,128,0.15)' }
-        },
-        y: {
-          title: { display: true, text: '1 in N runs (lower = better)', color: '#888780', font: { size: 11 } },
-          ticks: { color: '#888780' },
-          grid: { color: 'rgba(136,135,128,0.15)' }
-        }
-      }
+
+        el.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">
+    <div class="card">
+      <div class="metric-label" style="margin-bottom:8px">How Magic Find affects the strategy</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">
+        MF applies when the final item chance (after meter modifications) is <strong style="color:var(--text)">below 5%</strong>.
+        For ${drop.name} (base ~${(res.baseChanceNoMF*100).toFixed(3)}%), MF ${mfImpact ? '<strong style="color:var(--green)">applies</strong>' : '<strong style="color:var(--text2)">DOES NOT apply</strong>'}.
+        With ${mf} MF, the multiplier is <strong style="color:var(--text)">${(1+mf/100).toFixed(2)}x</strong>.
+      </p>
+    </div>
+    <div class="card">
+      <div class="metric-label" style="margin-bottom:8px">Required XP Formula</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">
+        The Required XP is calculated as <code style="font-size:12px;background:var(--bg4);padding:2px 6px;border-radius:4px">floor(${meterMult} / baseChance)</code>${isVampire ? ' (Vampire uses a 250 multiplier instead of 500)' : ''}.
+        For ${drop.name}: floor(${meterMult} / ${(res.baseChanceNoMF).toFixed(6)}) = <strong style="color:var(--accent)">${res.reqXp.toLocaleString()} XP</strong>.
+        This equals <strong style="color:var(--text)">${res.m} runs</strong> at ${res.xpPerRun.toFixed(0)} XP/run.
+      </p>
+    </div>
+    <div class="card">
+      <div class="metric-label" style="margin-bottom:8px">Strategic conclusion</div>
+      <p style="font-size:13px;color:var(--text2);line-height:1.7">
+        ${bigGain
+            ? `The <strong style="color:var(--green)">+${res.gain.toFixed(1)}%</strong> gain is significant. It is worth using the sweet spot strategy.`
+            : `The <strong style="color:var(--text)">+${res.gain.toFixed(1)}%</strong> gain is small. The practical difference in long sessions is marginal.`}
+        ${res.bestL === 0
+            ? ' <strong style="color:var(--amber)">Never turn the meter ON</strong> — accumulate XP and use the guaranteed pity.'
+            : ` Recommended: <strong style="color:var(--text)">meter ON for the first ${res.bestL} runs (${res.pct.toFixed(0)}%)</strong>, then turn it off.`}
+        Aatrox ${aatrox ? 'active (+25% XP)' : 'inactive'} → ${res.xpPerRun.toFixed(0)} XP/run → pity at ${res.m} runs.
+        ${pity > 0 ? `RNG Meter level ${pity} (+${pity}% XP).` : ''}
+      </p>
+    </div>
+  </div>`;
     }
-  });
-}
 
-// Magic Find
-document.getElementById('val-mf').addEventListener('input', function() {
-  if (selectedDrop !== null) compute();
-});
-// Pity Attribute Level
-document.getElementById('val-pity').addEventListener('input', function() {
-  if (selectedDrop !== null) compute();
-});
+    // ══════════════════════════════════════════════════════════════
+    // CHART
+    // ══════════════════════════════════════════════════════════════
+    function renderChart(res) {
+        res = res || window._lastRes;
+        if (!res || res.isDye || !res.effByL.length) return;
+        if (effChart) { effChart.destroy(); effChart = null; }
 
-initSelectors();
+        const ctx = document.getElementById('eff-chart').getContext('2d');
+        effChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: res.effByL.map(x => x.L),
+                datasets: [{
+                    label: '1 in N runs',
+                    data: res.effByL.map(x => parseFloat((1 / x.eff).toFixed(1))),
+                    borderColor: '#7c6af7',
+                    backgroundColor: 'rgba(124,106,247,0.08)',
+                    fill: true,
+                    pointRadius: res.effByL.map(x => x.L === res.bestL ? 6 : 1.5),
+                    pointBackgroundColor: res.effByL.map(x => x.L === res.bestL ? '#e8564d' : '#7c6af7'),
+                    pointBorderColor: res.effByL.map(x => x.L === res.bestL ? '#e8564d' : '#7c6af7'),
+                    tension: 0.3, borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1f2333', borderColor: '#2a2e3f', borderWidth: 1,
+                        titleColor: '#e8eaf0', bodyColor: '#9aa0b8',
+                        callbacks: { label: ctx => `1 in ${ctx.parsed.y} runs | ${((ctx.dataIndex/res.m)*100).toFixed(0)}% of meter` }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Runs with meter ON (L)', color: '#5c6280', font: { size: 11 } },
+                        ticks: { maxTicksLimit: 10, color: '#5c6280' },
+                        grid: { color: 'rgba(255,255,255,0.04)' }
+                    },
+                    y: {
+                        title: { display: true, text: '1 in N runs (lower = better)', color: '#5c6280', font: { size: 11 } },
+                        ticks: { color: '#5c6280' },
+                        grid: { color: 'rgba(255,255,255,0.04)' }
+                    }
+                }
+            }
+        });
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // LISTENERS & INIT
+    // ══════════════════════════════════════════════════════════════
+    ['val-mf', 'val-meter'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+            buildDropGrid();
+            if (selectedDrop !== null) compute();
+        });
+    });
+    document.getElementById('val-pity').addEventListener('input', () => {
+        if (selectedDrop !== null) compute();
+    });
+
+    initSelectors();
 </script>
+</body>
+</html>
